@@ -12,8 +12,6 @@ class VectorLayer(torch.nn.Module) :
         # For every input there will be a transormation
         # matrix of size vector_size^2
 
-        input_size = in_vector_size*out_vector_size*in_features
-
 
     def forward(self, x: Tensor):
         """
