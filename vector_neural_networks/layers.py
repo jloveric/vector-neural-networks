@@ -8,6 +8,7 @@ class VectorLayer(torch.nn.Module) :
         super().__init__()
         
         self.weight = Parameter(torch.Tensor(in_vector_size, out_vector_size, in_features, out_features))
+        self.weight.data.normal_(mean=0.0, std=1.0)
         # For every input there will be a transormation
         # matrix of size vector_size^2
 
@@ -19,3 +20,5 @@ class VectorLayer(torch.nn.Module) :
         Input vector of size [basis x inputs_size X vector_size]
         """
         assemble = torch.einsum("biv,voif->bfo", x, self.weight)
+
+        return assemble
