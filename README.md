@@ -11,3 +11,7 @@ poetry install
 ```
 pytest -s tests
 ```
+
+## Relevant Papers
+
+[Vector Neurons: A General Framework for SO(3)-Equivariant Networks](https://arxiv.org/pdf/2104.12229.pdf)
