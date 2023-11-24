@@ -39,14 +39,10 @@ class HalfSpaceProjection(torch.nn.Module):
         that transforms x. It's not clear to me why you would want that.
         """
         norm_squared = torch.clamp(torch.einsum('fv,fv->f', self.weight, self.weight), min=self.epsilon)
-        print('norm', norm_squared)
         projection = torch.einsum('bfv,fv->bf', x, self.weight)/norm_squared
-        print('norm_squared.shape', norm_squared.shape)
-        print('projections.shape', projection.shape)
-
+        
         parallel_component = torch.einsum('bf,fv->bfv',projection,self.weight)
-        print('parallel_component', parallel_component.shape)
-        print('x.shape', x.shape)
-        #diff = x-projection*self.weight/norm_squared
+        projection = projection.unsqueeze(2)
+        
         result=torch.where(projection<0, x-parallel_component, x)
         return result
