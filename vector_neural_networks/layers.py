@@ -22,23 +22,31 @@ class VectorLayer(torch.nn.Module) :
 
         return assemble
     
-    class HalfSpaceProjection(torch.nn.Module):
+class HalfSpaceProjection(torch.nn.Module):
+    """
+    Given a list of input vectors, project them onto the half space
+    """
+    def __init__(self, features:Tensor, vector_size:Tensor, epsilon:float=1e-6) :
+        super().__init__()
+        self.weight = Parameter(torch.Tensor(features, vector_size))
+        self.weight.data.normal_(mean=0.0, std=1.0)
+        self.epsilon = epsilon
+        
+
+    def forward(self, x: Tensor) :
         """
-        Given a list of input vectors, project them onto the half space
+        A bit different than the paper as they have an additional learned weight vector
+        that transforms x. It's not clear to me why you would want that.
         """
-        def __init__(self, features:Tensor, vector_size:Tensor, epsilon:float=1e-6) :
-            self.weight = Parameter(torch.Tensor(features, vector_size))
-            self.weight.data.normal_(mean=0.0, std=1.0)
-            
+        norm_squared = torch.clamp(torch.einsum('fv,fv->f', self.weight, self.weight), min=self.epsilon)
+        print('norm', norm_squared)
+        projection = torch.einsum('bfv,fv->bf', x, self.weight)/norm_squared
+        print('norm_squared.shape', norm_squared.shape)
+        print('projections.shape', projection.shape)
 
-        def forward(self, x: Tensor) :
-            """
-            A bit different than the paper as they have an additional learned weight vector
-            that transforms x.
-            """
-            norm = torch.max(self.epsilon, torch.einsum('fv,fv->f', self.weight, self.weight))
-            projection = torch.einsum('bfv,fv->bf', x, self.weight)
-
-
-            result=torch.where(projection<0, x-(projection/norm)*(self.weight/norm), x)
-            return result
+        parallel_component = torch.einsum('bf,fv->bfv',projection,self.weight)
+        print('parallel_component', parallel_component.shape)
+        print('x.shape', x.shape)
+        #diff = x-projection*self.weight/norm_squared
+        result=torch.where(projection<0, x-parallel_component, x)
+        return result
