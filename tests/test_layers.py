@@ -43,3 +43,6 @@ def test_vector_normalization() :
 
     in_vector = torch.rand(batch_size, features, vector_size)
     result = vector_normalizer(in_vector)
+
+    # Should check the normalization as well...
+    assert result.shape == in_vector.shape
